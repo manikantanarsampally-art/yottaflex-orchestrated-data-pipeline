@@ -1,6 +1,4 @@
-
-@'
-# YottaFlex â€” Orchestrated Data Pipeline
+# YottaFlex - Orchestrated Data Pipeline
 
 ## 1. Project Overview
 
@@ -8,7 +6,7 @@ A Python-based, locally runnable data engineering solution that demonstrates an 
 
 The pipeline processes order events from CSV files, validates business rules, transforms accepted records, and publishes them into SQLite.
 
-### Key capabilities
+### Key Capabilities
 
 - Dependency-based task orchestration.
 - Configurable retries and task timeouts.
@@ -25,44 +23,46 @@ The pipeline processes order events from CSV files, validates business rules, tr
 ## 2. Architecture
 
 ```text
-                  CSV Source
-                      |
-                      v
-                 1. INGEST
-              Read and check schema
-                      |
-                      v
-                2. VALIDATE
-             Required fields and rules
-                      |
-               +------+------+
-               |             |
-               v             v
-          Valid Records    Rejects
-               |          (Quarantine)
-               v
-               3. TRANSFORM
-             Normalize records
-             Round amount values
-                      |
-                      v
-                 4. PUBLISH
-                      |
-               +------+------+
-               |             |
-               v             v
-          order_history  target_orders
-          Event history  Latest state
-
-                 SQLite
-                    |
-                    v
-           Run and Task Tracking
+                         CSV Source
+                             |
+                             v
+                          1. INGEST
+                       Read and check schema
+                             |
+                             v
+                         2. VALIDATE
+                      Required fields and rules
+                             |
+                       +-----+-----+
+                       |           |
+                       v           v
+                  Valid Records  Rejects
+                       |        (Quarantine)
+                       v
+                     3. TRANSFORM
+                    Normalize records
+                    Round amount values
+                             |
+                             v
+                          4. PUBLISH
+                             |
+                       +-----+-----+
+                       |           |
+                       v           v
+                  order_history  target_orders
+                  Event history  Latest state
+                       |           |
+                       +-----+-----+
+                             |
+                           SQLite
+                             |
+                             v
+                    Run and Task Tracking
 ```
 
 The workflow executes in dependency order:
 
-`ingest â†’ validate â†’ transform â†’ publish`
+`ingest → validate → transform → publish`
 
 A task runs only after its required upstream dependencies succeed. A critical upstream failure prevents downstream publication.
 
@@ -82,31 +82,31 @@ No external cloud services or credentials are required.
 ## 4. Project Structure
 
 ```text
-yottaflex_orchestrated_pipeline/
-|
-|-- src/
-|   |-- __init__.py
-|   |-- pipeline.py
-|
-|-- tests/
-|   |-- test_pipeline.py
-|   |-- test_event_history.py
-|   |-- test_pipeline_metrics.py
-|   |-- test_publish_recovery.py
-|
-|-- data/
-|   |-- orders.csv
-|
-|-- requirements.txt
-|-- README.md
-|-- pipeline.db
+yottaflex-orchestrated-data-pipeline/
+│
+├── src/
+│   ├── __init__.py
+│   └── pipeline.py
+│
+├── tests/
+│   ├── test_pipeline.py
+│   ├── test_event_history.py
+│   ├── test_pipeline_metrics.py
+│   └── test_publish_recovery.py
+│
+├── data/
+│   └── orders.csv
+│
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
 The SQLite database is created and initialized by the application when required. Local virtual environments, caches, and temporary databases are not required for execution.
 
 ## 5. Data Model and Data Dictionary
 
-### Source event schema
+### Source Event Schema
 
 The generated event CSV contains six columns.
 
@@ -121,7 +121,7 @@ The generated event CSV contains six columns.
 
 The pipeline also supports the original four-column legacy CSV format for backward compatibility.
 
-### Database entities
+### Database Entities
 
 | Table | Primary key | Purpose |
 |---|---|---|
@@ -131,7 +131,7 @@ The pipeline also supports the original four-column legacy CSV format for backwa
 | target_orders | order_id | Latest accepted state for each order |
 | rejects | reject_id | Quarantined records with source and rejection reason |
 
-### Important metrics
+### Important Metrics
 
 The run record tracks:
 
@@ -173,16 +173,16 @@ These references are configurable through the Python `Config` object.
 
 ## 7. Orchestration, Retries, and Failure Handling
 
-### Task dependencies
+### Task Dependencies
 
 The pipeline contains four dependent tasks:
 
-1. `ingest` â€” reads the source CSV.
-2. `validate` â€” checks records and separates valid records from rejects.
-3. `transform` â€” normalizes accepted records.
-4. `publish` â€” writes accepted records into SQLite.
+1. `ingest` — reads the source CSV.
+2. `validate` — checks records and separates valid records from rejects.
+3. `transform` — normalizes accepted records.
+4. `publish` — writes accepted records into SQLite.
 
-### Retry configuration
+### Retry Configuration
 
 Default configuration:
 
@@ -197,15 +197,15 @@ The initial execution is followed by up to two retries for retryable exceptions.
 
 Permanent input and schema errors are treated as non-retryable.
 
-### Timeout handling
+### Timeout Handling
 
 Tasks are executed with an asynchronous timeout using `asyncio.wait_for`.
 
 A timeout is recorded as a task failure and follows the configured retry policy.
 
-Note: asynchronous timeouts do not guarantee interruption of blocking synchronous operations such as file or database I/O.
+**Important limitation:** Asynchronous timeouts do not guarantee interruption of blocking synchronous operations such as file or database I/O.
 
-### Failure notification
+### Failure Notification
 
 On pipeline failure, the application:
 
@@ -214,7 +214,7 @@ On pipeline failure, the application:
 - Prints a console failure notification containing the run ID and reason.
 - Raises the exception to the caller.
 
-The current implementation uses application logging and console notification; external email, Slack, or PagerDuty integration is not included.
+The current implementation uses application logging and console notification. External email, Slack, or PagerDuty integration is not included.
 
 ## 8. Idempotency and Event History
 
@@ -237,32 +237,33 @@ The legacy four-column input format uses a deterministic event identifier derive
 - pip.
 - Windows, Linux, or macOS.
 
-### Clone the repository
+### Clone the Repository
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-cd yottaflex_orchestrated_pipeline
+git clone https://github.com/manikantanarsampally-art/yottaflex-orchestrated-data-pipeline.git
+
+cd yottaflex-orchestrated-data-pipeline
 ```
 
-Replace the placeholder with the actual repository URL.
+### Create a Virtual Environment
 
-### Create a virtual environment
-
-Windows PowerShell:
+**Windows PowerShell:**
 
 ```powershell
 python -m venv .venv
+
 .venv\Scripts\Activate.ps1
 ```
 
-Linux or macOS:
+**Linux or macOS:**
 
 ```bash
 python3 -m venv .venv
+
 source .venv/bin/activate
 ```
 
-### Install dependencies
+### Install Dependencies
 
 ```bash
 python -m pip install -r requirements.txt
@@ -270,7 +271,7 @@ python -m pip install -r requirements.txt
 
 ## 10. Running the Pipeline
 
-### Generate sample data
+### Generate Sample Data
 
 Generate 30 reproducible sample records:
 
@@ -280,7 +281,7 @@ python -m src.pipeline --generate 30
 
 The default output file is `data/orders.csv`.
 
-### Run the pipeline
+### Run the Pipeline
 
 ```bash
 python -m src.pipeline
@@ -288,19 +289,19 @@ python -m src.pipeline
 
 The default input is `data/orders.csv`, and the default database is `pipeline.db`.
 
-### Specify a custom input and database
+### Specify a Custom Input and Database
 
 ```bash
 python -m src.pipeline --input data/orders.csv --db pipeline.db
 ```
 
-### Configure retries and timeout
+### Configure Retries and Timeout
 
 ```bash
 python -m src.pipeline --input data/orders.csv --db pipeline.db --retries 3 --timeout 15
 ```
 
-### Generate data at a custom path
+### Generate Data at a Custom Path
 
 ```bash
 python -m src.pipeline --input data/custom_orders.csv --generate 1000
@@ -347,15 +348,15 @@ The tests cover:
 - Duplicate and conflicting event IDs.
 - Late-arriving event handling.
 
-### Latest local validation
+### Latest Local Validation
 
 The complete test suite was executed successfully:
 
 ```text
-30 passed in 7.34s
+30 passed
 ```
 
-This result reflects the local validation run at the time this README was updated. Re-run the test command to verify the current checkout.
+Re-run the test command to verify the current checkout.
 
 ## 13. Limitations and Future Improvements
 
@@ -390,7 +391,9 @@ The implementation emphasizes:
 ---
 
 **Project:** YottaFlex Orchestrated Data Pipeline
+
 **Language:** Python
+
 **Database:** SQLite
+
 **Testing:** pytest
-'@ | Set-Content -Path README.md -Encoding utf8
